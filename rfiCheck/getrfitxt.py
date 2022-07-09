@@ -1,21 +1,22 @@
 import sys
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 
 rfilist = ''
 count = 0
 
+if len(sys.argv[:]) == 1:
+    filelist = glob.glob("*rfi-channel-list.txt")
+elif len(sys.argv[:]) == 2:
+    filelist = [sys.argv[1]]
+else:
+    sys.exit(0)
 
-name = sys.argv[1]
-data = np.loadtxt(name+'-rfi-channel-list.txt',dtype=int)
-
-
-#plt.scatter(data, np.zeros(len(data)))
-#
-#for i in rfilist:
-#    plt.axvline(x=i)
-#plt.show()
-
+data = np.array([])
+for filename in filelist:
+    #print("loading file: ", filename)
+    data = np.append(data, np.loadtxt(filename,dtype=int))
 
 def runs(iterable):
     iterator = iter(iterable)
@@ -30,7 +31,7 @@ def runs(iterable):
 
     yield (start, end)
 
-
+data = np.array(list(set(data)), dtype=int)
 lows, highs = zip(*runs(data))
 #print(lows, highs)
 for i,j in zip(lows, highs):
