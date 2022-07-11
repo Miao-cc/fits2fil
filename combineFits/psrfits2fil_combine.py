@@ -11,7 +11,7 @@ import sys
 import os
 import time
 
-def translate_header(psrfits_file):
+def translate_header(psrfits_file,**args):
     fits_hdr = psrfits_file.header
     subint_hdr = psrfits_file.fits['SUBINT'].header 
     subint_data = psrfits_file.fits['SUBINT'].data
@@ -59,10 +59,21 @@ def translate_header(psrfits_file):
     #fil_header["nifs"] = subint_hdr['NPOL']
     fil_header["nifs"] = 1
 
+    for key, value in args.items():
+        if value is None:
+            continue
+        elif key=="ra":
+            fil_header["src_raj"] = float(value.replace(':',''))
+        elif key=="dec":
+            fil_header["src_dej"] = float(value.replace(':',''))
+        else:
+            fil_header[key] = value
+
     return fil_header
 
 def main(fits_fn, outfn, gaindiff, baselinediff, nbits, \
-            apply_weights, apply_scales, apply_offsets):
+            apply_weights, apply_scales, apply_offsets, ra, dec):
+
     with open(fits_fn) as fw:
         fits_list = fw.readlines()
         for num, filename in enumerate(fits_list):
@@ -74,7 +85,7 @@ def main(fits_fn, outfn, gaindiff, baselinediff, nbits, \
                 fil_header = translate_header(psrfits_file)
                 fil_header['nbits'] = nbits
                 outfil = filterbank.create_filterbank_file(outfn, fil_header, \
-                                                    nbits=nbits, mode='write')
+                                                    nbits=nbits, mode='write',ra=ra, dec=dec)
 
                 # if frequency channels are in ascending order
                 # band will need to be flipped
@@ -143,6 +154,13 @@ if __name__=='__main__':
     parser.add_option("-b",dest='baselinediff',action='store',
                       default=None, type='float',
                       help="baseline difference between AA and BB")
+
+    parser.add_option("-ra",dest='ra',action='store',
+                      default=None, type='string',
+                      help="ra (J2000)")
+    parser.add_option("-dec",dest='dec',action='store',
+                      default=None, type='string',
+                      help="dec (J2000)")
     parser.add_option("--noweights", dest='apply_weights',
                       default=True, action="store_false",
                       help="Do not apply weights when converting data.")
@@ -172,4 +190,4 @@ if __name__=='__main__':
         baselinediff = 0
 
     main(fits_fn, outfn, gaindiff, baselinediff, options.nbits, options.apply_weights,
-            options.apply_scales, options.apply_offsets)
+            options.apply_scales, options.apply_offsets,options.ra,options.dec)
