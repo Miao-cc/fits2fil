@@ -82,10 +82,10 @@ def main(fits_fn, outfn, gaindiff, baselinediff, nbits, \
                 start = time.time()
                 psrfits_file = psrfits.PsrfitsFile(filename)
 
-                fil_header = translate_header(psrfits_file)
+                fil_header = translate_header(psrfits_file,ra=ra, dec=dec)
                 fil_header['nbits'] = nbits
                 outfil = filterbank.create_filterbank_file(outfn, fil_header, \
-                                                    nbits=nbits, mode='write',ra=ra, dec=dec)
+                                                    nbits=nbits, mode='write')
 
                 # if frequency channels are in ascending order
                 # band will need to be flipped
@@ -130,7 +130,7 @@ def main(fits_fn, outfn, gaindiff, baselinediff, nbits, \
                 if pcnt != oldpcnt:
                     sys.stdout.write("% 4s%% complete(finish %s, total %s)\r" % (pcnt, num, len(fits_list)))
                     sys.stdout.flush()
-        print("Done                             ")
+        print("Done                              ")
         outfil.close()
 
     print("Runtime:",time.time() - start)
@@ -155,10 +155,10 @@ if __name__=='__main__':
                       default=None, type='float',
                       help="baseline difference between AA and BB")
 
-    parser.add_option("-ra",dest='ra',action='store',
+    parser.add_option("--ra",dest='ra',action='store',
                       default=None, type='string',
                       help="ra (J2000)")
-    parser.add_option("-dec",dest='dec',action='store',
+    parser.add_option("--dec",dest='dec',action='store',
                       default=None, type='string',
                       help="dec (J2000)")
     parser.add_option("--noweights", dest='apply_weights',
